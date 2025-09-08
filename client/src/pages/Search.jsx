@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-function Search({ onSearchResults }) { // receive callback from Home
+function Search({ onSearchResults }) { 
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleSearch = async () => {

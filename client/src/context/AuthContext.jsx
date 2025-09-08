@@ -6,7 +6,7 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
 
-  // ✅ Load user from localStorage on mount
+  
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {

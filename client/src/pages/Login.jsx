@@ -16,8 +16,8 @@ export default function Login({ setIsAuthenticated }) {
 
       if (res.data.success) {
         localStorage.setItem("user", JSON.stringify(res.data.user));
-        setIsAuthenticated(true);  // ✅ tell App.jsx user is logged in
-        navigate("/"); // ✅ redirect to Home
+        setIsAuthenticated(true);  
+        navigate("/"); 
       } else {
         alert(res.data.message || "Invalid credentials");
       }

@@ -17,10 +17,9 @@ function App() {
 
   return (
     <Router>
-      {isAuthenticated && <Navbar />} {/* Navbar only shows when logged in */}
+      {isAuthenticated && <Navbar />} 
 
       <Routes>
-        {/* Redirect root "/" → login if not logged in */}
         <Route
           path="/"
           element={

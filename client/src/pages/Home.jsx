@@ -2,13 +2,15 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import MovieCard from "../components/MovieCard";
 import Search from "./Search";
+import { useAuth } from "../context/AuthContext";
 
 function Home() {
   const [movies, setMovies] = useState([]);
-  const [isSearchActive, setIsSearchActive] = useState(false); // track if search was performed
-  const userId = "6800ce71f036304b30f47318"; // hardcoded for now
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const { user } = useAuth(); 
+    
 
-  // Function to fetch popular movies
+
   const fetchPopularMovies = async () => {
     try {
       const res = await axios.get(
@@ -17,28 +19,27 @@ function Home() {
         }&language=en-US&page=1`
       );
       setMovies(res.data.results);
-      setIsSearchActive(false); // reset search state
+      setIsSearchActive(false); 
     } catch (err) {
       console.error("Error fetching movies:", err);
     }
   };
 
-  // Fetch popular movies on component mount
+
   useEffect(() => {
     fetchPopularMovies();
   }, []);
 
-  // Callback to receive search results from Search component
+  
   const handleSearchResults = (results) => {
-    setMovies(results); // replace the movies list with search results
-    setIsSearchActive(true); // mark that a search has been performed
+    setMovies(results); 
+    setIsSearchActive(true); 
   };
 
   return (
     <div style={{ padding: "20px" }}>
       <h1>🎬 Movies</h1>
 
-      {/* Show button only if search was performed */}
       {isSearchActive && (
         <button
           onClick={fetchPopularMovies}
@@ -58,7 +59,7 @@ function Home() {
         }}
       >
         {movies.map((movie) => (
-          <MovieCard key={movie.id} movie={movie} userId={userId} />
+          <MovieCard key={movie.id} movie={movie} userId={user.id} />
         ))}
       </div>
     </div>

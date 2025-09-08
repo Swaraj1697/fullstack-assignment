@@ -331,7 +331,7 @@ app.get("/users/:userId/stats", async (req, res) => {
     }
 });
   
-
+// AI blurb based on rating submissions
 const generateRecommendations = async (userId) => {
     try {
         const ratings = await Ratings.find({ userId });
@@ -343,11 +343,11 @@ const generateRecommendations = async (userId) => {
             };
         }
 
-        // Find the highest-rated movie
+
         const topRating = ratings.sort((a, b) => b.rating - a.rating)[0];
         const movieId = topRating.movieId;
 
-        // Get details of that movie from TMDB
+
         const response = await axios.get(
             `https://api.themoviedb.org/3/movie/${movieId}`,
             { params: { api_key: process.env.TMDB_KEY } }
@@ -382,9 +382,7 @@ const generateRecommendations = async (userId) => {
     }
 };
 
-/**
- * Dynamic endpoint: recommendations per user
- */
+// recoomendations API
 app.get("/recommendations/daily/:userId", async (req, res) => {
     try {
         const { userId } = req.params;
@@ -401,13 +399,12 @@ app.post("/auth/register", async (req, res) => {
     try {
         const { name, email, password, role } = req.body;
 
-        // check if user exists
+
         const existingUser = await Users.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ error: "User already exists" });
         }
 
-        // hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = new Users({
@@ -428,19 +425,19 @@ app.post("/auth/register", async (req, res) => {
 });
 
 // LOGIN
+
 app.post("/auth/login", async (req, res) => {
     const { email, password } = req.body;
-    console.log("Login attempt:", email, password); // 👈 Debug log
 
     try {
         const user = await Users.findOne({ email });
-        console.log("User found:", user); // 👈 Debug log
 
         if (!user) {
             return res.status(400).json({ success: false, message: "User not found" });
         }
 
-        if (user.password && user.password !== password) {
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
             return res.status(400).json({ success: false, message: "Invalid password" });
         }
 
@@ -454,10 +451,11 @@ app.post("/auth/login", async (req, res) => {
             },
         });
     } catch (err) {
-        console.error("Login error:", err); // 👈 log full error
+        console.error("Login error:", err);
         res.status(500).json({ success: false, message: "Server error" });
     }
 });
+
   
   
   

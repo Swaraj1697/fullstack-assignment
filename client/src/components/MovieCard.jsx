@@ -18,7 +18,6 @@ export default function MovieCard({ movie, userId }) {
 
   return (
     <div style={{ border: "1px solid #ddd", padding: "10px", width: "200px" }}>
-      {/* Poster + Title wrapped in Link */}
       <Link state={{ userId }} to={`/movie/${movie.id}`} style={{ textDecoration: "none", color: "inherit" }}>
         <img
           src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`}
@@ -28,7 +27,6 @@ export default function MovieCard({ movie, userId }) {
         <h4>{movie.title}</h4>
       </Link>
 
-      {/* Rating input */}
       <input
         type="number"
         min="1"
