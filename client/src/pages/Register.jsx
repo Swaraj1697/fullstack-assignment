@@ -50,7 +50,7 @@ export default function Register() {
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "0 auto" }}>
+    <>
       <h2>Register</h2>
       <form onSubmit={handleRegister}>
         <div>
@@ -90,6 +90,6 @@ export default function Register() {
           Register
         </button>
       </form>
-    </div>
+    </>
   );
 }

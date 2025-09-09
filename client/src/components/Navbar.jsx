@@ -2,8 +2,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
 
+
 export default function Navbar() {
-  const { setIsAuthenticated, setUser } = useAuth();
+  const { isAuthenticated , setIsAuthenticated, setUser , isLoading } = useAuth();
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
 
@@ -17,8 +18,15 @@ export default function Navbar() {
   const handleLogout = () => {
     setIsAuthenticated(false);
     setUser(null);
-    navigate("/"); // back to login
+
+    localStorage.removeItem("token"); 
+    localStorage.removeItem("user");
+  
+    navigate("/login", { replace: true });
   };
+
+  if (isLoading) return null; 
+  if (!isAuthenticated) return null;
 
   return (
     <nav style={{ padding: "10px", background: "#f5f5f5" }}>

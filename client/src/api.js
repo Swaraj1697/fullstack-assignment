@@ -4,6 +4,14 @@ const API = axios.create({
     baseURL: "http://localhost:5000", // backend URL
 });
 
+API.interceptors.request.use((config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
 // Add or update rating
 export const addOrUpdateRating = async (userId, movieId, rating) => {
     return API.post("/ratings/add", { userId, movieId, rating });

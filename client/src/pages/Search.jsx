@@ -9,7 +9,12 @@ function Search({ onSearchResults }) {
     if (!searchQuery) return;
     try {
       const response = await axios.get(
-        `http://localhost:5000/movies/search?query=${searchQuery}`
+        `http://localhost:5000/movies/search?query=${searchQuery}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       );
       onSearchResults(response.data); // send results to Home
     } catch (error) {

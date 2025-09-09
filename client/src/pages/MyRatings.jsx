@@ -10,9 +10,14 @@ export default function MyRatings() {
     if (!user) return;
 
     axios
-      .get(`http://localhost:5000/ratings/${user.id}`)
-      .then((res) => setRatings(res.data))
-      .catch((err) => console.error("Error fetching ratings", err));
+    .get(`http://localhost:5000/ratings/${user.id}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    })
+    .then((res) => setRatings(res.data))
+    .catch((err) => console.error("Error fetching ratings", err));
+  
   }, [user]);
 
   if (!user) return <p>Please login to see your ratings.</p>;
