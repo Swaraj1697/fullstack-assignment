@@ -58,13 +58,21 @@ app.post("/users/add", async (req, res) => {
 
 app.post("/ratings/add", async (req, res) => {
     try {
-        const { userId, movieId, rating } = req.body;
-        const newRating = new Ratings({ userId, movieId, rating });
-        await newRating.save();
-        res.json({ success: true, rating: newRating });
+        const { userId, movieId, movieTitle, rating, liked } = req.body;
+
+        console.log("Incoming body:", req.body);
+
+        const updated = await Ratings.findOneAndUpdate(
+            { userId, movieId },                     // find by user+movie combo
+            { movieTitle, rating, liked },           // update these fields
+            { new: true, upsert: true }              // create if not exists
+        );
+
+        console.log("Saved rating:", updated);
+        res.json({ success: true, rating: updated });
     } catch (err) {
         console.error(err.message);
-        res.status(500).json({ error: "Failed to add rating" });
+        res.status(500).json({ error: "Failed to add/update rating" });
     }
 });
 
@@ -115,19 +123,6 @@ app.get("/movies/search", async (req, res) => {
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: "Failed to fetch movies" });
-    }
-});
-
-// Add rating
-app.post("/ratings/add", async (req, res) => {
-    try {
-        const { userId, movieId, rating } = req.body;
-        const newRating = new Ratings({ userId, movieId, rating });
-        await newRating.save();
-        res.json({ success: true, rating: newRating });
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).json({ error: "Failed to add rating" });
     }
 });
 
@@ -331,7 +326,7 @@ app.get("/users/:userId/stats", async (req, res) => {
     }
 });
   
-// AI blurb based on rating submissions
+// AI blurb based on like/dislikes and rating submissions
 const generateRecommendations = async (userId) => {
     try {
         const ratings = await Ratings.find({ userId });
@@ -339,15 +334,26 @@ const generateRecommendations = async (userId) => {
         if (ratings.length === 0) {
             return {
                 recommendations: [],
-                blurb: "You haven’t rated any movies yet. Start rating to get personalized recommendations!"
+                blurb:
+                    "You haven’t rated or liked any movies yet. Start interacting to get personalized recommendations!",
             };
         }
 
+        // 1. Prioritize liked movies first, then highest rated
+        let priorityMovie;
+        const likedMovies = ratings.filter((r) => r.liked === true);
 
-        const topRating = ratings.sort((a, b) => b.rating - a.rating)[0];
-        const movieId = topRating.movieId;
+        if (likedMovies.length > 0) {
+            // pick the most recently liked (or random from likes)
+            priorityMovie = likedMovies[likedMovies.length - 1];
+        } else {
+            // fallback → pick highest rated
+            priorityMovie = ratings.sort((a, b) => b.rating - a.rating)[0];
+        }
 
+        const movieId = priorityMovie.movieId;
 
+        // 2. Fetch TMDB movie details
         const response = await axios.get(
             `https://api.themoviedb.org/3/movie/${movieId}`,
             { params: { api_key: process.env.TMDB_KEY } }
@@ -357,6 +363,7 @@ const generateRecommendations = async (userId) => {
         const movieGenreId = response.data.genres?.[0]?.id;
         const movieGenreName = response.data.genres?.[0]?.name || "movies";
 
+        // 3. Get similar movies from the same genre
         let similarMovies = [];
         if (movieGenreId) {
             const genreResponse = await axios.get(
@@ -373,14 +380,21 @@ const generateRecommendations = async (userId) => {
             similarMovies = genreResponse.data.results.slice(0, 5);
         }
 
-        const aiBlurb = `Because you loved *${movieTitle}*, we think you’ll enjoy these ${movieGenreName} movies.`;
+        // 4. Generate blurb (different message for like vs rating)
+        const aiBlurb = priorityMovie.liked
+            ? `Because you liked ❤️ *${movieTitle}*, here are some more ${movieGenreName} movies you might enjoy.`
+            : `Because you rated ⭐ *${movieTitle}* highly, we think you’ll enjoy these ${movieGenreName} movies.`;
 
         return { recommendations: similarMovies, blurb: aiBlurb };
     } catch (err) {
         console.error("Error generating recommendations:", err.message);
-        return { recommendations: [], blurb: "Could not generate recommendations right now." };
+        return {
+            recommendations: [],
+            blurb: "Could not generate recommendations right now.",
+        };
     }
 };
+
 
 // recoomendations API
 app.get("/recommendations/daily/:userId", async (req, res) => {
@@ -424,6 +438,11 @@ app.post("/auth/register", async (req, res) => {
     }
 });
 
+app.get("/test", (req, res) => {
+    debugger; // breakpoint will hit
+    res.send("Hello");
+});
+
 // LOGIN
 
 app.post("/auth/login", async (req, res) => {
@@ -454,10 +473,8 @@ app.post("/auth/login", async (req, res) => {
         res.status(500).json({ success: false, message: "Server error" });
     }
 });
-  
-  
-  
-  
+
+
 
 app.listen(5000, () =>
     console.log("🚀 Server started on http://localhost:5000")

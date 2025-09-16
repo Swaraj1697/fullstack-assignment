@@ -11,20 +11,16 @@ import Register from "./pages/Register";
 import AuthLayout from "./components/AuthLayout";
 import Search from "./pages/Search";
 import MainLayout from "./components/MainLayout";
+import { useAuth } from "./context/AuthContext";
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const savedUser = localStorage.getItem("user");
   
-    if (token && savedUser) {
-      setIsAuthenticated(true);
-      setUser(JSON.parse(savedUser));
-    }
-  }, []);
+  const { isAuthenticated, user, isLoading , setIsAuthenticated  , setUser} = useAuth();
+
+  
+  if (isLoading) {
+    return <div>Loading...</div>; // or a spinner
+  }
 
   return (
     <Router>
@@ -44,14 +40,18 @@ function App() {
           }
         />
 
-        <Route
-          path="/login"
-          element={
-            <AuthLayout>
-              <Login setIsAuthenticated={setIsAuthenticated} setUser={setUser} />
-            </AuthLayout>
-          }
-        />
+<Route
+  path="/login"
+  element={
+    isAuthenticated ? (
+      <Navigate to="/" />   // 🔑 redirect if already logged in
+    ) : (
+      <AuthLayout>
+        <Login setIsAuthenticated={setIsAuthenticated} setUser={setUser} />
+      </AuthLayout>
+    )
+  }
+/>
 
         <Route
           path="/register"

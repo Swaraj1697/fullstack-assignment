@@ -13,8 +13,10 @@ API.interceptors.request.use((config) => {
 });
 
 // Add or update rating
-export const addOrUpdateRating = async (userId, movieId, rating) => {
-    return API.post("/ratings/add", { userId, movieId, rating });
+export const addOrUpdateRating = async (userId, movieId, movieTitle, rating, liked) => {
+    console.log("userId, movieId, movieTitle, rating:", userId, movieId, movieTitle, rating, liked);
+
+    return API.post("/ratings/add", { userId, movieId, movieTitle, rating, liked });
 };
 
 // Optional: delete rating
